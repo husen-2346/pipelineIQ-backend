@@ -1,41 +1,60 @@
-export const detectExecutionFlow = (parsed) => {
-  if (!parsed.jobs) return { type: "unknown", details: [] };
-
-  const jobs = parsed.jobs;
+// detect the execution flow
+export const detectExecutionFlow = (parsedYaml) => {
+  const jobs = parsedYaml.jobs || {};
   const jobNames = Object.keys(jobs);
+  
+  const graph = {};
+  const inDegree = {};
 
-  let hasDependencies = false;
-  let independentJobs = 0;
-
-  jobNames.forEach((jobName) => {
-    const job = jobs[jobName];
-
-    if (job.needs) {
-      hasDependencies = true;
-    } else {
-      independentJobs++;
-    }
+  // Initialize
+  jobNames.forEach((job) => {
+    graph[job] = [];
+    inDegree[job] = 0;
   });
 
-  if (!hasDependencies) {
-    return {
-      type: "parallel",
-      details: ["All jobs run independently → fully parallel"],
-    };
+  //  Build the Graph
+  jobNames.forEach((job) => {
+    const deps = jobs[job].needs || [];
+    const dependencies = Array.isArray(deps) ? deps : [deps];
+
+    dependencies.forEach((dep) => {
+      if (graph[dep]) { 
+        graph[dep].push(job);
+        inDegree[job]++;
+      }
+    });
+  });
+
+  //  The Topological Sort (Kahn's Algorithm)
+  const queue = [];
+  const layers = [];
+
+  Object.keys(inDegree).forEach((job) => {
+    if (inDegree[job] === 0) queue.push(job);
+  });
+
+  while (queue.length) {
+    const currentLayer = [...queue];
+    layers.push(currentLayer);
+    const nextQueue = [];
+
+    currentLayer.forEach((job) => {
+      (graph[job] || []).forEach((neighbor) => {
+        inDegree[neighbor]--;
+        if (inDegree[neighbor] === 0) {
+          nextQueue.push(neighbor);
+        }
+      });
+    });
+    queue.splice(0, queue.length, ...nextQueue);
   }
 
-  if (independentJobs === 0) {
-    return {
-      type: "sequential",
-      details: ["All jobs depend on others → sequential pipeline"],
-    };
+  //  Return the Analysis
+  if (layers.length === 1) {
+    return { type: "parallel", layers, details: ["Fully parallel execution"] };
   }
-
-  return {
-    type: "mixed",
-    details: [
-      `${independentJobs} job(s) run independently`,
-      "Some jobs depend on others → partial parallelism",
-    ],
-  };
+  if (layers.every(layer => layer.length === 1)) {
+    return { type: "sequential", layers, details: ["Fully sequential execution"] };
+  }
+  return { type: "dag", layers, details: [`${layers.length} execution stages`] };
 };

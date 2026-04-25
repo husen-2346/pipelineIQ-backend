@@ -1,0 +1,73 @@
+CI/CD Pipeline Optimiser (Node.js + Express)
+
+A smart CI/CD Pipeline Optimisation tool that analyzes GitHub Actions / CI YAML files, builds a DAG (Directed Acyclic Graph) of jobs, estimates execution time, detects inefficiencies, and provides AI-powered optimization suggestions.
+
+Features
+-> Parse CI/CD YAML files (GitHub Actions compatible)
+-> Build execution DAG (job dependency graph)
+-> Estimate pipeline execution time
+-> Detect optimization opportunities using rule-based engine
+-> AI-powered suggestions (OpenAI / OpenRouter integration)
+-> Identify critical path for faster pipelines
+-> Analyze job types (build, test, deploy, etc.)
+-> REST API backend built with Express.js
+
+Architecture
+
+Client (React / UI)
+        │
+        ▼
+Node.js + Express API
+        │
+        ├── YAML Parser (js-yaml)
+        ├── DAG Builder (DFS / Topological Sort)
+        ├── Time Estimator
+        ├── Rule Engine
+        ├── AI Engine (OpenAI API)
+        ▼
+Optimized Pipeline Output (YAML + Insights)
+
+Tech Stack
+Backend: Node.js, Express.js
+Parser: js-yaml
+Graph Processing: Custom DAG (DFS + memoization)
+AI Integration: OpenAI / OpenRouter API
+Utilities: deep-diff, custom rule engine
+
+Project Structure
+project-root/
+│
+├── src/
+│   ├── controllers/
+│   │   └── pipelineController.js
+│   ├── utils/
+│   │   ├── detectExecutionFlow.js
+│   │   ├── sanitizeYaml.js
+│   │   └── rules.js
+|   |   |__ calculateTime.js
+│   ├── routes/
+│   │   └── pipelineRoutes.js
+│   ├── app.js
+│   └── server.js
+│
+├── package.json
+└── README.md
+
+Getting Started
+git clone https://github.com/your-username/pipeline-optimizer.git
+cd pipeline-optimizer
+
+Install dependencies
+npm install
+
+Setup environment variables
+Create a .env file:
+PORT=5000
+OPENAI_API_KEY=your_api_key
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+
+Run the server
+npm start
+
+For development:
+npm run dev

@@ -6,10 +6,9 @@ import { sanitizeYaml } from "../utils/sanitizeYaml.js";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
+  baseURL: process.env.OPENAI_BASE_URL,
   apiKey:
-    process.env.PIPELINE_KEY ||
-    "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",
+    process.env.PIPELINE_KEY
 });
 
 const aiResultsStore = new Map();
